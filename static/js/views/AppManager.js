@@ -18,7 +18,7 @@ define([
         return (
           React.createElement("div", {className: "navbar-header"}, 
             React.createElement("a", {className: "navbar-brand", href: "/"}, 
-              "Spark Pull Requests"
+              "STC Spark Pull Requests"
             )
           )
         );

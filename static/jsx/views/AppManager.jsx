@@ -18,7 +18,7 @@ define([
         return (
           <div className="navbar-header">
             <a className="navbar-brand" href="/">
-              Spark Pull Requests
+              STC Spark Pull Requests
             </a>
           </div>
         );

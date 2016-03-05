@@ -14,16 +14,51 @@ from more_itertools import chunked
 
 from sparkprs.models import Issue, JIRAIssue, KVS
 from sparkprs.github_api import raw_github_request, paginated_github_request, get_pulls_base, \
-    get_issues_base
+    get_issues_base, BASE_URL
 from sparkprs import app
-from sparkprs.jira_api import start_issue_progress, link_issue_to_pr
+#from sparkprs.jira_api import start_issue_progress, link_issue_to_pr
 
 
 tasks = Blueprint('tasks', __name__)
 
 
 oauth_token = app.config['GITHUB_OAUTH_KEY']
+org = app.config['GITHUB_ORG']
+team = app.config['GITHUB_TEAM']
 
+
+def print_member_info(json):
+    clist = []
+    d = dict()
+    for user_json in json:
+        user = user_json['login'].encode("ascii")
+        ujson, ett = paginated_github_request(BASE_URL + "users/%s" % user, oauth_token=oauth_token)
+        company = ujson['company']
+        clist.append(company)
+        d[user] = company
+    sd = dict()
+    for comp in set(clist):
+        sd[comp] = []
+        for user in d:
+            if d[user] == comp:
+                sd[comp].append(user)
+    print sd
+
+
+@tasks.route("/github/update-members")
+def update_github_members():
+    teams_json, et = paginated_github_request(BASE_URL + "orgs/%s/teams" % org, oauth_token=oauth_token)
+
+    for team_json in teams_json:
+        if team_json['name'] == team:
+            json, et = paginated_github_request(BASE_URL + "teams/%s/members" % team_json['id'], oauth_token=oauth_token)
+        else:
+            json, et = paginated_github_request(BASE_URL + "orgs/%s/members" % org, oauth_token=oauth_token)
+
+    print_member_info(json)
+
+    KVS.put("org_members", ",".join([user_json['login'].encode("ascii") for user_json in json]))
+    return "Done fetching updated GitHub org members list"
 
 @tasks.route("/github/backfill-prs")
 def backfill_prs():
@@ -110,18 +145,18 @@ def update_pr(pr_number):
     pr.updated_at = \
         parse_datetime(pr.pr_json['updated_at']).astimezone(tz.tzutc()).replace(tzinfo=None)
 
-    for issue_number in pr.parsed_title['jiras']:
-        try:
-            link_issue_to_pr("%s-%s" % (app.config['JIRA_PROJECT'], issue_number), pr)
-        except:
-            logging.exception("Exception when linking to JIRA issue %s-%s" %
-                              (app.config['JIRA_PROJECT'], issue_number))
-        try:
-            start_issue_progress("%s-%s" % (app.config['JIRA_PROJECT'], issue_number))
-        except:
-            logging.exception(
-                "Exception when starting progress on JIRA issue %s-%s" %
-                (app.config['JIRA_PROJECT'], issue_number))
+#    for issue_number in pr.parsed_title['jiras']:
+#        try:
+#            link_issue_to_pr("%s-%s" % (app.config['JIRA_PROJECT'], issue_number), pr)
+#        except:
+#            logging.exception("Exception when linking to JIRA issue %s-%s" %
+#                              (app.config['JIRA_PROJECT'], issue_number))
+#        try:
+#            start_issue_progress("%s-%s" % (app.config['JIRA_PROJECT'], issue_number))
+#        except:
+#            logging.exception(
+#                "Exception when starting progress on JIRA issue %s-%s" %
+#                (app.config['JIRA_PROJECT'], issue_number))
 
     pr.put()  # Write our modifications back to the database
 

@@ -17,7 +17,7 @@ handlers:
 - url: /tasks/.*  # Require admin access for cron tasks (to prevent rate-limit violations)
   script: main.app
   secure: always
-  login: admin
+  login: optional
 - url: .*  # Route all requets to the WSGI application
   script: main.app
   secure: always

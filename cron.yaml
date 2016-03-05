@@ -5,3 +5,6 @@ cron:
 - description: update JIRA issues
   url: /tasks/update-jira-issues
   schedule: every 5 minutes
+- description: update Github or member list
+  url: /tasks/github/update-members
+  schedule: every 60 minutes
