@@ -52,6 +52,7 @@ def update_github_members():
     for team_json in teams_json:
         if team_json['name'] == team:
             json, et = paginated_github_request(BASE_URL + "teams/%s/members" % team_json['id'], oauth_token=oauth_token)
+            break
         else:
             json, et = paginated_github_request(BASE_URL + "orgs/%s/members" % org, oauth_token=oauth_token)
 
