@@ -59,7 +59,7 @@ define([
         if (this.state.prsCommentedOn.length > 0) {
           viewCommentedOn = (
             React.createElement("div", null, 
-              React.createElement("h3", null, "PRs commented on by ", this.props.username), 
+              React.createElement("h3", null, "STC PRs commented on by ", this.props.username), 
               React.createElement(PRTableView, {
                 prs: this.state.prsCommentedOn, 
                 showJenkinsButtons: this.props.showJenkinsButtons})
