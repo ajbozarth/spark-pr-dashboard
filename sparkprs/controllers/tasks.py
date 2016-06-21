@@ -4,8 +4,10 @@ import itertools
 import json
 import logging
 import re
+import operator
 
 from flask import Blueprint, url_for
+from flask import Response
 from google.appengine.api import taskqueue
 import feedparser
 from link_header import parse as parse_link_header
@@ -28,10 +30,10 @@ org = app.config['GITHUB_ORG']
 team = app.config['GITHUB_TEAM']
 
 
-def print_member_info(json):
+def print_member_info(json_in):
     clist = []
     d = dict()
-    for user_json in json:
+    for user_json in json_in:
         user = user_json['login'].encode("ascii")
         ujson, ett = paginated_github_request(BASE_URL + "users/%s" % user, oauth_token=oauth_token)
         company = ujson['company']
@@ -43,7 +45,33 @@ def print_member_info(json):
         for user in d:
             if d[user] == comp:
                 sd[comp].append(user)
-    print sd
+    print json.dumps(sd)
+
+
+@tasks.route("/github/top-contributors")
+def get_top_contributors():
+    prs = Issue.query(Issue.state != "deleted")
+    data = {}
+    top = {}
+    for pr in prs:
+        for component in pr.components:
+            if component not in data:
+                data[component] = {"authored": {}, "commented": {}}
+                top[component] = {"authored": {}, "commented": {}}
+            if pr.user in data[component]["authored"]:
+                data[component]["authored"][pr.user] += 1
+            else:
+                data[component]["authored"][pr.user] = 1
+            for commentor in pr.commenters:
+                if commentor[0] in data[component]["commented"]:
+                    data[component]["commented"][commentor[0]] += 1
+                else:
+                    data[component]["commented"][commentor[0]] = 1
+    for component in data:
+        top[component]["authored"] = sorted(data[component]["authored"].items(), key=operator.itemgetter(1), reverse=True)[:15]
+        top[component]["commented"] = sorted(data[component]["commented"].items(), key=operator.itemgetter(1), reverse=True)[:15]
+    response = Response(json.dumps(top), mimetype='application/json')
+    return response
 
 
 @tasks.route("/github/update-members")
