@@ -15,7 +15,7 @@ from dateutil.parser import parse as parse_datetime
 from dateutil import tz
 from more_itertools import chunked
 
-from sparkprs.models import Issue, JIRAIssue, KVS
+from sparkprs.models import Issue, JIRAIssue, KVS, Contributors
 from sparkprs.github_api import raw_github_request, paginated_github_request, get_pulls_base, \
     get_issues_base, BASE_URL
 from sparkprs import app
@@ -48,8 +48,8 @@ def print_member_info(json_in):
     print json.dumps(sd)
 
 
-@tasks.route("/github/top-contributors")
-def get_top_contributors():
+@tasks.route("/github/cache-top-contributors")
+def cache_top_contributors():
     prs = Issue.query(Issue.state != "deleted")
     data = {}
     top = {}
@@ -62,16 +62,22 @@ def get_top_contributors():
                 data[component]["authored"][pr.user] += 1
             else:
                 data[component]["authored"][pr.user] = 1
-            for commentor in pr.commenters:
-                if commentor[0] in data[component]["commented"]:
-                    data[component]["commented"][commentor[0]] += 1
-                else:
-                    data[component]["commented"][commentor[0]] = 1
+            for commenter in pr.commenters:
+                if commenter[0] != pr.user:
+                    if commenter[0] in data[component]["commented"]:
+                        data[component]["commented"][commenter[0]] += 1
+                    else:
+                        data[component]["commented"][commenter[0]] = 1
     for component in data:
         top[component]["authored"] = sorted(data[component]["authored"].items(), key=operator.itemgetter(1), reverse=True)[:15]
         top[component]["commented"] = sorted(data[component]["commented"].items(), key=operator.itemgetter(1), reverse=True)[:15]
-    response = Response(json.dumps(top), mimetype='application/json')
-    return response
+    Contributors.put(json.dumps(top))
+    return "Cached Top Contributors"
+
+
+@tasks.route("/github/top-contributors")
+def get_top_contributors():
+    return Response(Contributors.get().json, mimetype='application/json')
 
 
 @tasks.route("/github/update-members")
