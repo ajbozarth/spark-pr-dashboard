@@ -70,8 +70,9 @@ def cache_top_contributors():
                         data[component][commenter[0]] = [0, 1]
     components = sorted(data)
     for component in components:
-        top[component] = \
-            sorted(data[component].items(), key=lambda x: x[1][0] + x[1][1], reverse=True)[:15]
+        top[component] = sorted(data[component].items(),
+                                key=lambda x: (x[1][0] + x[1][1], x[1][0]),
+                                reverse=True)[:15]
     Contributors.put(json.dumps(top))
     return "Cached Top Contributors"
 
