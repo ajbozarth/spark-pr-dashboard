@@ -56,21 +56,21 @@ def cache_top_contributors():
     for pr in prs:
         for component in pr.components:
             if component not in data:
-                data[component] = {"authored": {}, "commented": {}}
-                top[component] = {"authored": {}, "commented": {}}
-            if pr.user in data[component]["authored"]:
-                data[component]["authored"][pr.user] += 1
+                data[component] = {}
+                top[component] = {}
+            if pr.user in data[component]:
+                data[component][pr.user][0] += 1
             else:
-                data[component]["authored"][pr.user] = 1
+                data[component][pr.user] = [1, 0]
             for commenter in pr.commenters:
                 if commenter[0] != pr.user:
-                    if commenter[0] in data[component]["commented"]:
-                        data[component]["commented"][commenter[0]] += 1
+                    if commenter[0] in data[component]:
+                        data[component][commenter[0]][1] += 1
                     else:
-                        data[component]["commented"][commenter[0]] = 1
+                        data[component][commenter[0]] = [0, 1]
     for component in data:
-        top[component]["authored"] = sorted(data[component]["authored"].items(), key=operator.itemgetter(1), reverse=True)[:15]
-        top[component]["commented"] = sorted(data[component]["commented"].items(), key=operator.itemgetter(1), reverse=True)[:15]
+        top[component] = \
+            sorted(data[component].items(), key=lambda x: x[1][0] + x[1][1], reverse=True)[:15]
     Contributors.put(json.dumps(top))
     return "Cached Top Contributors"
 
