@@ -5,6 +5,7 @@ import json
 import logging
 import re
 import operator
+import collections
 
 from flask import Blueprint, url_for
 from flask import Response
@@ -52,12 +53,11 @@ def print_member_info(json_in):
 def cache_top_contributors():
     prs = Issue.query(Issue.state != "deleted")
     data = {}
-    top = {}
+    top = collections.OrderedDict()
     for pr in prs:
         for component in pr.components:
             if component not in data:
                 data[component] = {}
-                top[component] = {}
             if pr.user in data[component]:
                 data[component][pr.user][0] += 1
             else:
@@ -68,7 +68,8 @@ def cache_top_contributors():
                         data[component][commenter[0]][1] += 1
                     else:
                         data[component][commenter[0]] = [0, 1]
-    for component in data:
+    components = sorted(data)
+    for component in components:
         top[component] = \
             sorted(data[component].items(), key=lambda x: x[1][0] + x[1][1], reverse=True)[:15]
     Contributors.put(json.dumps(top))
