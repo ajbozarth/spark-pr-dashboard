@@ -20,7 +20,7 @@ define([
         return (
           React.createElement("div", {className: "navbar-header"}, 
             React.createElement("a", {className: "navbar-brand", href: "/"}, 
-              "STC Spark Pull Requests"
+              "SystemML Pull Requests"
             )
           )
         );
@@ -281,15 +281,13 @@ define([
                   ), 
                   React.createElement("li", {className: pathname.indexOf('/top-contributors') === 0 ? "active" : ""}, 
                     React.createElement("a", {href: "/top-contributors"}, 
-                      "Top Contributors"
+                      "Contributors"
                     )
                   ), 
                   this.userIsAdmin() ? adminTab : ""
                 ), 
                 React.createElement("div", {className: "pull-right"}, 
-                  githubUser, 
-                  React.createElement(RefreshButton, {onClick: this.refreshPrs, enabled: !this.state.refreshInProgress}), 
-                  loginButton
+                  React.createElement(RefreshButton, {onClick: this.refreshPrs, enabled: !this.state.refreshInProgress})
                 )
               )
             ), 

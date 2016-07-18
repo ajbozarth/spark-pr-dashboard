@@ -54,14 +54,17 @@ def cache_stc_contributors():
     prs = Issue.query(Issue.state != "deleted")
     members = KVS.get("org_members").split(",")
     data = {}
-    for member in members:
-        data[member] = [0, 0]
     for pr in prs:
         if pr.user in data:
             data[pr.user][0] += 1
+        elif pr.user in members:
+            data[pr.user] = [1, 0]
         for commenter in pr.commenters:
-            if commenter[0] != pr.user and commenter[0] in data:
-                data[commenter[0]][1] += 1
+            if commenter[0] != pr.user:
+                if commenter[0] in data:
+                    data[commenter[0]][1] += 1
+                elif commenter[0] in members:
+                    data[commenter[0]] = [0, 1]
     top = sorted(data.items(), key=lambda x: (x[1][0] + x[1][1], x[1][0], x[0]), reverse=True)
     Contributors.put("stc", json.dumps(top))
     return "Cached STC Contributors"
@@ -71,26 +74,18 @@ def cache_stc_contributors():
 def cache_top_contributors():
     prs = Issue.query(Issue.state != "deleted")
     data = {}
-    top = collections.OrderedDict()
     for pr in prs:
-        for component in pr.components:
-            if component not in data:
-                data[component] = {}
-            if pr.user in data[component]:
-                data[component][pr.user][0] += 1
-            else:
-                data[component][pr.user] = [1, 0]
-            for commenter in pr.commenters:
-                if commenter[0] != pr.user:
-                    if commenter[0] in data[component]:
-                        data[component][commenter[0]][1] += 1
-                    else:
-                        data[component][commenter[0]] = [0, 1]
-    components = sorted(data)
-    for component in components:
-        top[component] = sorted(data[component].items(),
-                                key=lambda x: (x[1][0] + x[1][1], x[1][0]),
-                                reverse=True)[:15]
+        if pr.user in data:
+            data[pr.user][0] += 1
+        else:
+            data[pr.user] = [1, 0]
+        for commenter in pr.commenters:
+            if commenter[0] != pr.user:
+                if commenter[0] in data:
+                    data[commenter[0]][1] += 1
+                else:
+                    data[commenter[0]] = [0, 1]
+    top = sorted(data.items(), key=lambda x: (x[1][0] + x[1][1], x[1][0], x[0]), reverse=True)
     Contributors.put("contributors", json.dumps(top))
     cache_stc_contributors()
     return "Cached Top Contributors"

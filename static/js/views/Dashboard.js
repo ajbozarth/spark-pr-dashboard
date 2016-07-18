@@ -102,7 +102,6 @@ define([
 
         return (
           React.createElement("div", null, 
-            subNavigation, 
             mainView
           )
         );

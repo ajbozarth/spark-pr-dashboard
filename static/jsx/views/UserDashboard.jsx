@@ -59,7 +59,7 @@ define([
         if (this.state.prsCommentedOn.length > 0) {
           viewCommentedOn = (
             <div>
-              <h3>STC PRs commented on by {this.props.username}</h3>
+              <h3>PRs commented on by {this.props.username}</h3>
               <PRTableView
                 prs={this.state.prsCommentedOn}
                 showJenkinsButtons={this.props.showJenkinsButtons}/>

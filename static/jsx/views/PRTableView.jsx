@@ -23,7 +23,7 @@ define([
 
     var JIRALink = React.createClass({
       render: function() {
-        var link = "http://issues.apache.org/jira/browse/SPARK-" + this.props.number;
+        var link = "http://issues.apache.org/jira/browse/SYSTEMML-" + this.props.number;
         return (
           <a className="jira-link" href={link} target="_blank">
             {this.props.number}
@@ -138,7 +138,7 @@ define([
           <i className="glyphicon glyphicon-ok"></i> :
           <i className="glyphicon glyphicon-remove"></i>);
 
-        var pullLink = "https://github.com/apache/spark/pull/" + pr.number;
+        var pullLink = "https://github.com/apache/incubator-systemml/pull/" + pr.number;
 
         var jenkinsOutcome = jenkinsOutcomes[pr.last_jenkins_outcome];
         var iconClass = "glyphicon glyphicon-" + jenkinsOutcome.iconName;
@@ -227,9 +227,6 @@ define([
               {mergeIcon}
             </td>
             <td>
-              {jenkinsCell}
-            </td>
-            <td>
               {updatedCell}
             </td>
           </tr>
@@ -254,7 +251,6 @@ define([
         'Commenters': function(row) { return row.props.pr.commenters.length; },
         'Changes': function(row) { return row.props.pr.lines_changed; },
         'Merges': function(row) { return row.props.pr.is_mergeable; },
-        'Jenkins': function(row) { return row.props.pr.last_jenkins_outcome; },
         'Updated': function(row) { return row.props.pr.updated_at; }
       },
 
@@ -271,7 +267,6 @@ define([
           "Commenters",
           "Changes",
           "Merges",
-          "Jenkins",
           "Updated"
         ];
         if (this.props.showJenkinsButtons) {

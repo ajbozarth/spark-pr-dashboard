@@ -17,19 +17,19 @@ prs = Blueprint('prs', __name__)
 @prs.route('/search-open-prs')
 @cache.cached(timeout=60)
 def search_open_prs():
-    members = KVS.get("org_members").split(",")
-    prs = Issue.query(ndb.AND(Issue.state == "open", Issue.user.IN(members))).order(-Issue.updated_at).fetch()
-#    prs = Issue.query(Issue.state == "open").order(-Issue.updated_at).fetch()
+#    members = KVS.get("org_members").split(",")
+#    prs = Issue.query(ndb.AND(Issue.state == "open", Issue.user.IN(members))).order(-Issue.updated_at).fetch()
+    prs = Issue.query(Issue.state == "open").order(-Issue.updated_at).fetch()
     return search_prs(prs)
 
 
 @prs.route('/search-stale-prs')
 @cache.cached(timeout=60)
 def search_stale_prs():
-    members = KVS.get("org_members").split(",")
+#    members = KVS.get("org_members").split(",")
     issueQuery = ndb.AND(Issue.state == "open",
-                         Issue.updated_at < datetime.datetime.today() - datetime.timedelta(days=30),
-                         Issue.user.IN(members))
+                         Issue.updated_at < datetime.datetime.today() - datetime.timedelta(days=30))#,
+                         #Issue.user.IN(members))
     stalePrs = Issue.query(issueQuery).order(-Issue.updated_at).fetch()
     return search_prs(stalePrs)
 

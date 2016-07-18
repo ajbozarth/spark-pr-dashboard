@@ -20,7 +20,7 @@ define([
         return (
           <div className="navbar-header">
             <a className="navbar-brand" href="/">
-              STC Spark Pull Requests
+              SystemML Pull Requests
             </a>
           </div>
         );
@@ -281,15 +281,13 @@ define([
                   </li>
                   <li className={pathname.indexOf('/top-contributors') === 0 ? "active" : ""}>
                     <a href="/top-contributors">
-                      Top Contributors
+                      Contributors
                     </a>
                   </li>
                   {this.userIsAdmin() ? adminTab : ""}
                 </ul>
                 <div className="pull-right">
-                  {githubUser}
                   <RefreshButton onClick={this.refreshPrs} enabled={!this.state.refreshInProgress}/>
-                  {loginButton}
                 </div>
               </div>
             </nav>

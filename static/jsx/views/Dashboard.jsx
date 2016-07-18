@@ -102,7 +102,6 @@ define([
 
         return (
           <div>
-            {subNavigation}
             {mainView}
           </div>
         );

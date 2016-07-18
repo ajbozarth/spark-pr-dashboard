@@ -63,11 +63,14 @@ define([
       tableRows: function(component) {
         var users = [];
         if (component === "STC") {
-          users = this.props.stcContributors;
+          var stcContributors = this.props.stcContributors;
+          if (stcContributors) {
+          users = stcContributors;
+          }
         } else {
           var topContributors = this.props.topContributors;
           if (topContributors) {
-            users = topContributors[component];
+            users = topContributors;
           }
         }
         var tableRows = _.map(users, function(user, index) {
@@ -82,13 +85,11 @@ define([
       },
 
       componentDidMount: function() {
-        if (this.props.topContributors) {
-          this._prepareData(this.props.topContributors);
-        }
+          this._prepareData();
       },
 
       componentWillReceiveProps: function(nextProps) {
-        this._prepareData(nextProps.topContributors);
+        this._prepareData();
       },
 
       componentDidUpdate: function(prevProps, prevState) {
@@ -98,20 +99,22 @@ define([
         }
       },
 
-      _prepareData: function(topContributors) {
-        var tab = this._checkTabAvailability(topContributors);
+      _prepareData: function() {
+        var tab = this._checkTabAvailability();
 
-        this.setState({ activeTab: tab ? tab : "STC" });
+        this.setState({ activeTab: tab ? tab : "All" });
       },
 
-      _checkTabAvailability: function(topContributors) {
+      _checkTabAvailability: function() {
         var hash = window.location.hash.split(/#|&/);
         var anchor = hash.pop();
+        var stcComponent = "STC";
+        var component = "All";
 
-        for (var component in topContributors) {
-          if (this.getAnchor(component) === anchor) {
-            return component;
-          }
+        if (this.getAnchor(stcComponent) === anchor) {
+          return stcComponent;
+        } else if (this.getAnchor(component) === anchor) {
+          return component;
         }
       },
 
@@ -121,8 +124,22 @@ define([
         var display_block = { display: 'block' };
 
         var activeTab = this.state.activeTab;
-        var topContributors = this.props.topContributors;
         var stcComponent = "STC";
+        var component = "All";
+
+        navItems.push(
+          <NavItem
+            component={component}
+            active={component === activeTab}/>
+        );
+        userTables.push(
+          <div id={component} style={component === activeTab ? display_block : display_none}>
+            <TableView
+              rows={this.tableRows(component)}
+              columnNames={this.columnNames}
+              sortFunctions={this.sortFunctions}/>
+          </div>
+        );
 
         navItems.push(
           <NavItem
@@ -137,22 +154,6 @@ define([
               sortFunctions={this.sortFunctions}/>
           </div>
         );
-
-        for (var component in topContributors) {
-          navItems.push(
-            <NavItem
-              component={component}
-              active={component === activeTab}/>
-          );
-          userTables.push(
-            <div id={component} style={component === activeTab ? display_block : display_none}>
-              <TableView
-                rows={this.tableRows(component)}
-                columnNames={this.columnNames}
-                sortFunctions={this.sortFunctions}/>
-            </div>
-          );
-        }
 
         var navBar = (
           <nav className="sub-nav navbar navbar-default" role="navigation">
