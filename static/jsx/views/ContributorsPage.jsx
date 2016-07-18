@@ -61,10 +61,14 @@ define([
       },
 
       tableRows: function(component) {
-        var topContributors = this.props.topContributors;
         var users = [];
-        if (topContributors) {
-          users = topContributors[component];
+        if (component === "STC") {
+          users = this.props.stcContributors;
+        } else {
+          var topContributors = this.props.topContributors;
+          if (topContributors) {
+            users = topContributors[component];
+          }
         }
         var tableRows = _.map(users, function(user, index) {
           return (
@@ -97,7 +101,7 @@ define([
       _prepareData: function(topContributors) {
         var tab = this._checkTabAvailability(topContributors);
 
-        this.setState({ activeTab: tab ? tab : "Core" });
+        this.setState({ activeTab: tab ? tab : "STC" });
       },
 
       _checkTabAvailability: function(topContributors) {
@@ -118,6 +122,21 @@ define([
 
         var activeTab = this.state.activeTab;
         var topContributors = this.props.topContributors;
+        var stcComponent = "STC";
+
+        navItems.push(
+          <NavItem
+            component={stcComponent}
+            active={stcComponent === activeTab}/>
+        );
+        userTables.push(
+          <div id={stcComponent} style={stcComponent === activeTab ? display_block : display_none}>
+            <TableView
+              rows={this.tableRows(stcComponent)}
+              columnNames={this.columnNames}
+              sortFunctions={this.sortFunctions}/>
+          </div>
+        );
 
         for (var component in topContributors) {
           navItems.push(

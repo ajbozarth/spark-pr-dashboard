@@ -113,7 +113,11 @@ define([
       },
 
       topContributors: function() {
-        return (React.createElement(ContributorsPage, {topContributors: this.state.topContributors}));
+        return (
+          React.createElement(ContributorsPage, {
+            topContributors: this.state.topContributors, 
+            stcContributors: this.state.stcContributors})
+          );
       },
 
       userDashboard: function(username) {
@@ -125,7 +129,8 @@ define([
       },
 
       getInitialState: function() {
-        return {prs: [], stalePrs: [], user: null, topContributors: null, refreshInProgress: false};
+        return {prs: [], stalePrs: [], user: null, topContributors: null,
+          stcContributors: null, refreshInProgress: false};
       },
 
       refreshPrs: function() {
@@ -184,6 +189,20 @@ define([
           success: function(topContributors) {
             if (topContributors) {
               _this.setState({topContributors: topContributors});
+            }
+          }
+        });
+        this.refreshStcContributors();
+      },
+
+      refreshStcContributors: function() {
+        var _this = this;
+        $.ajax({
+          url: '/tasks/github/stc-contributors',
+          dataType: 'json',
+          success: function(stcContributors) {
+            if (stcContributors) {
+              _this.setState({stcContributors: stcContributors});
             }
           }
         });

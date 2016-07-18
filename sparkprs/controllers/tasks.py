@@ -49,6 +49,24 @@ def print_member_info(json_in):
     print json.dumps(sd)
 
 
+@tasks.route("/github/cache-stc-contributors")
+def cache_stc_contributors():
+    prs = Issue.query(Issue.state != "deleted")
+    members = KVS.get("org_members").split(",")
+    data = {}
+    for member in members:
+        data[member] = [0, 0]
+    for pr in prs:
+        if pr.user in data:
+            data[pr.user][0] += 1
+        for commenter in pr.commenters:
+            if commenter[0] != pr.user and commenter[0] in data:
+                data[commenter[0]][1] += 1
+    top = sorted(data.items(), key=lambda x: (x[1][0] + x[1][1], x[1][0], x[0]), reverse=True)
+    Contributors.put("stc", json.dumps(top))
+    return "Cached STC Contributors"
+
+
 @tasks.route("/github/cache-top-contributors")
 def cache_top_contributors():
     prs = Issue.query(Issue.state != "deleted")
@@ -73,13 +91,19 @@ def cache_top_contributors():
         top[component] = sorted(data[component].items(),
                                 key=lambda x: (x[1][0] + x[1][1], x[1][0]),
                                 reverse=True)[:15]
-    Contributors.put(json.dumps(top))
+    Contributors.put("contributors", json.dumps(top))
+    cache_stc_contributors()
     return "Cached Top Contributors"
+
+
+@tasks.route("/github/stc-contributors")
+def get_stc_contributors():
+    return Response(Contributors.get("stc").json, mimetype='application/json')
 
 
 @tasks.route("/github/top-contributors")
 def get_top_contributors():
-    return Response(Contributors.get().json, mimetype='application/json')
+    return Response(Contributors.get("contributors").json, mimetype='application/json')
 
 
 @tasks.route("/github/update-members")

@@ -45,17 +45,18 @@ class User(ndb.Model):
 
 
 class Contributors(ndb.Model):
+    key_str = ndb.StringProperty()
     json = ndb.JsonProperty()
 
     @classmethod
-    def get(cls):
-        key = str(ndb.Key("Contributors", "contributors").id())
+    def get(cls, key_str):
+        key = str(ndb.Key("Contributors", key_str).id())
         return Contributors.get_by_id(key)
 
     @classmethod
-    def put(cls, json):
-        key = str(ndb.Key("Contributors", "contributors").id())
-        contributors = Contributors.get_or_insert(key, json=json)
+    def put(cls, key_str, json):
+        key = str(ndb.Key("Contributors", key_str).id())
+        contributors = Contributors.get_or_insert(key, key_str=key_str, json=json)
         contributors.json = json
         ndb.Model.put(contributors)
 
